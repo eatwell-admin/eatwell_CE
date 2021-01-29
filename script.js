@@ -92,9 +92,23 @@ document.addEventListener('DOMContentLoaded', function() {
   // Change Mark as solved text according to whether comment is filled
   var requestCommentTextarea = document.querySelector('.request-container .comment-container textarea');
 
+  var usesWysiwyg = requestCommentTextarea && requestCommentTextarea.dataset.helper === "wysiwyg";
+
+  function isEmptyPlaintext(s) {
+    return s.trim() === '';
+  }
+
+  function isEmptyHtml(xml) {
+    var doc = new DOMParser().parseFromString(`<_>${xml}</_>`, "text/xml");
+    var img = doc.querySelector("img");
+    return img === null && isEmptyPlaintext(doc.children[0].textContent);
+  };
+
+  var isEmpty = usesWysiwyg ? isEmptyHtml : isEmptyPlaintext;
+
   if (requestCommentTextarea) {
     requestCommentTextarea.addEventListener('input', function() {
-      if (requestCommentTextarea.value === '') {
+      if (isEmpty(requestCommentTextarea.value)) {
         if (requestMarkAsSolvedButton) {
           requestMarkAsSolvedButton.innerText = requestMarkAsSolvedButton.getAttribute('data-solve-translation');
         }
@@ -109,7 +123,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Disable submit button if textarea is empty
-  if (requestCommentTextarea && requestCommentTextarea.value === '') {
+  if (requestCommentTextarea && isEmpty(requestCommentTextarea.value)) {
     requestCommentSubmitButton.disabled = true;
   }
 
@@ -218,7 +232,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Dropdowns
-  
+
   function Dropdown(toggle, menu) {
     this.toggle = toggle;
     this.menu = menu;
